@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-07-13
+
 ### Added
 
 - Asynchronously cached Rebrickable part thumbnails in the desktop result card, with
@@ -15,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Polished the desktop result layout and centred the studs in generated application icons.
+
+### Fixed
+
+- Fixed the GitHub Actions desktop release job so it checks out the repository before
+  verifying the release tag and creating the draft release.
 
 ## [1.2.0] - 2026-07-12
 
@@ -54,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guided setup scripts for macOS, Windows, and Linux.
 - GitHub Actions test matrix covering Python 3.10–3.13 on macOS, Windows, and Linux.
 
-[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/MES30004E/lego-element-lookup/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MES30004E/lego-element-lookup/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MES30004E/lego-element-lookup/releases/tag/v1.0.0

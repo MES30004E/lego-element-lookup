@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lego-element-lookup"
-version = "1.2.0"
+version = "1.2.1"
 description = "Look up LEGO element IDs in an offline Rebrickable set inventory"
 readme = "README.md"
 requires-python = ">=3.10"
