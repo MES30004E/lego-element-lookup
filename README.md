@@ -1,5 +1,7 @@
 # LEGO Element Lookup
 
+[![Tests](https://github.com/MES30004E/lego-element-lookup/actions/workflows/tests.yml/badge.svg)](https://github.com/MES30004E/lego-element-lookup/actions/workflows/tests.yml)
+
 LEGO Element Lookup is a small command-line tool for people rebuilding LEGO sets in Mecabricks. Enter the element ID printed in an instruction manual and it reports the part code first, the official LEGO colour code second, plus their names. The part code is copied to the clipboard automatically.
 
 Lookups use a downloaded Rebrickable set inventory and are fully offline. The tool checks both Rebrickable's top-level `element_id` and the element number in `part_img_url`, because either can contain the manual's identifier.
@@ -59,7 +61,9 @@ python3 -m venv .venv
 python -m pip install .
 ```
 
-For an editable development install, use `python -m pip install -e .`.
+Then create the user configuration from [`config.example.json`](config.example.json)
+using the location for your operating system shown below. The setup scripts do this
+for you. For an editable development install, use `python -m pip install -e .`.
 
 ## Get a Rebrickable API key
 
@@ -69,6 +73,9 @@ For an editable development install, use `python -m pip install -e .`.
 4. Run `lego-lookup config-path` to find your configuration file.
 5. Open that file in a text editor and replace `YOUR_API_KEY_HERE` with the key.
 6. Do not share the key or commit the configuration file to Git.
+
+The configuration must remain valid JSON, including the quotation marks around the
+key and set number. Downloading is the only operation that requires the API key.
 
 As an alternative, set `REBRICKABLE_API_KEY` in your environment. `LEGO_LOOKUP_SET` changes the default set. Environment variables override the config file.
 
@@ -125,6 +132,11 @@ macOS uses `pbcopy` and Windows uses `clip`. Linux tries `wl-copy`, then `xclip`
 The application sends the API key only in Rebrickable's required `Authorization` header during download. It never prints the key. Normal lookups make no network request. Local `config.json` and `cache/*.json` files are ignored by Git; verify staged files before every commit. If a key has ever been exposed, revoke and replace it immediately.
 
 LEGO is a trademark of the LEGO Group, which does not sponsor or endorse this project. Rebrickable data remains subject to Rebrickable's terms.
+
+## Release history
+
+See [CHANGELOG.md](CHANGELOG.md) for version history. Version 1.0.0 is the first
+public release.
 
 ## Development
 
