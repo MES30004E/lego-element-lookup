@@ -6,7 +6,9 @@ from lego_element_lookup.lookup import CacheFormatError, CacheMissingError, find
 
 
 def test_top_level_element_id(entries):
-    assert find_matches(entries, "6212040")[0].part_code == "35480"
+    match = find_matches(entries, "6212040")[0]
+    assert match.part_code == "35480"
+    assert match.rgb == "720E0F"
 
 
 def test_image_element_id(entries):

@@ -8,6 +8,7 @@ def entries():
     colour = {
         "id": 320,
         "name": "Dark Red",
+        "rgb": "720E0F",
         "external_ids": {"LEGO": {"ext_ids": [154], "ext_descrs": [["Dark red"]]}},
     }
     return [
@@ -23,6 +24,6 @@ def entries():
             "quantity": 1,
             "is_spare": False,
             "part": {"part_num": "2420", "name": "Plate 2 x 2 Corner", "part_img_url": "https://cdn.example/parts/6293739.jpg?x=1"},
-            "color": {"name": "Medium Azure", "external_ids": {"LEGO": {"ext_ids": [322], "ext_descrs": [["Medium Azure"]]}}},
+            "color": {"name": "Medium Azure", "rgb": "36AEBF", "external_ids": {"LEGO": {"ext_ids": [322], "ext_descrs": [["Medium Azure"]]}}},
         },
     ]

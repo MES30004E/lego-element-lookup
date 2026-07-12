@@ -27,6 +27,7 @@ class Match:
     colour_code: str
     part_name: str
     colour_name: str
+    rgb: str | None = None
     quantity: int = 0
     spare_quantity: int = 0
 
@@ -77,7 +78,8 @@ def find_matches(inventory: Iterable[dict[str, Any]], element_id: str) -> list[M
         part = entry.get("part") or {}
         code, name = lego_colour(entry.get("color") or {})
         key = (str(part.get("part_num") or "Unknown"), code, str(part.get("name") or "Unknown"), name)
-        match = combined.setdefault(key, Match(*key))
+        rgb = (entry.get("color") or {}).get("rgb")
+        match = combined.setdefault(key, Match(*key, rgb=str(rgb) if rgb else None))
         try:
             quantity = int(entry.get("quantity") or 0)
         except (TypeError, ValueError):

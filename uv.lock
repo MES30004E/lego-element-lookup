@@ -34,7 +34,7 @@ wheels = [
 
 [[package]]
 name = "lego-element-lookup"
-version = "1.0.0"
+version = "1.1.0"
 source = { editable = "." }
 
 [package.optional-dependencies]

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-12
+
+### Added
+
+- Bare numerical element IDs such as `lego-lookup 6212040` as shorthand for the
+  backwards-compatible `lego-lookup lookup 6212040` command.
+- Cached RGB colour swatches with ANSI true-colour output, plain-text fallbacks,
+  `NO_COLOR` support, and a `--no-colour` option.
+- Persistent interactive mode with repeated offline lookups, automatic clipboard
+  copying, input recovery, and clean quit, interrupt, and EOF handling.
+
 ## [1.0.0] - 2026-07-12
 
 ### Added
@@ -21,5 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guided setup scripts for macOS, Windows, and Linux.
 - GitHub Actions test matrix covering Python 3.10–3.13 on macOS, Windows, and Linux.
 
-[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/MES30004E/lego-element-lookup/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MES30004E/lego-element-lookup/releases/tag/v1.0.0

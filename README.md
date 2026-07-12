@@ -7,12 +7,14 @@ LEGO Element Lookup is a small command-line tool for people rebuilding LEGO sets
 Lookups use a downloaded Rebrickable set inventory and are fully offline. The tool checks both Rebrickable's top-level `element_id` and the element number in `part_img_url`, because either can contain the manual's identifier.
 
 ```text
-$ lego-lookup lookup 6212040
+$ lego-lookup 6212040
 Part code:    35480
 Colour code:  154
 
 Part name:    Plate Special 1 x 2 Rounded with 2 Open Studs
 Colour:       Dark red
+Swatch:       ██████████  #720E0F
+Inventory:    quantity 22
 
 Part code copied to clipboard.
 ```
@@ -105,14 +107,52 @@ Start the continuous prompt:
 lego-lookup
 ```
 
-Enter one part at a time. Empty input is ignored; `q`, `quit`, or `exit` closes it. For a single lookup:
+The prompt stays open so you can paste parts one after another:
+
+```text
+LEGO Element Lookup
+Paste an element ID, or type q to quit.
+
+Element ID: 6212040
+
+Part code:    35480
+Colour code:  154
+
+Part name:    Plate Special 1 x 2 Rounded with 2 Open Studs
+Colour:       Dark red
+Swatch:       ██████████  #720E0F
+Inventory:    quantity 22
+
+Part code copied to clipboard.
+
+Element ID:
+```
+
+Enter one part at a time. Empty input is ignored; `q`, `quit`, `exit`, Ctrl+C, or Ctrl+D closes it cleanly. Invalid input or a missing element reports the problem and returns to the prompt. For a single lookup:
+
+```sh
+lego-lookup 6212040
+lego-lookup 6293739
+```
+
+The original explicit form remains available for scripts and backwards compatibility:
 
 ```sh
 lego-lookup lookup 6212040
-lego-lookup lookup 6293739
 ```
 
-The second example can match the filename `6293739.jpg` even when the entry's top-level ID differs.
+The second bare-ID example can match the filename `6293739.jpg` even when the entry's top-level ID differs. Bare values must contain digits only; command names such as `download` and `config-path` remain unambiguous.
+
+### Colour swatches
+
+Lookup results always show the cached RGB hex code. On a compatible terminal, the block beside it uses ANSI true colour. Redirected output, terminals without colour support, invalid or missing RGB data, and the following opt-outs produce a plain fallback without ANSI escape sequences:
+
+```sh
+lego-lookup --no-colour 6212040
+NO_COLOR=1 lego-lookup 6212040       # macOS and Linux
+```
+
+In PowerShell, use `$env:NO_COLOR=1` before running the command. The colour swatch uses cached data and does not cause a network request.
 
 ## Clipboard behaviour
 
