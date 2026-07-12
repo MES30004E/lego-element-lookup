@@ -4,6 +4,8 @@
 
 LEGO Element Lookup is a small command-line tool for people rebuilding LEGO sets in Mecabricks. Enter the element ID printed in an instruction manual and it reports the part code first, the official LEGO colour code second, plus their names. The part code is copied to the clipboard automatically.
 
+Version 1.2 also includes a desktop application for people who prefer not to use a terminal. Download the installer for your operating system from GitHub Releases and launch **LEGO Element Lookup**.
+
 Lookups use a downloaded Rebrickable set inventory and are fully offline. The tool checks both Rebrickable's top-level `element_id` and the element number in `part_img_url`, because either can contain the manual's identifier.
 
 ```text
@@ -26,7 +28,30 @@ Part code copied to clipboard.
 - Internet access only while downloading or updating a set
 - On Linux, `wl-copy`, `xclip`, or `xsel` for automatic clipboard copying
 
-There are no third-party runtime Python dependencies.
+The downloadable desktop edition bundles Python. End users do not need to install Python or use Terminal. Source installations use the lightweight `keyring` package for secure desktop credential storage.
+
+## Desktop application
+
+Download the appropriate v1.2 release asset:
+
+- macOS Apple Silicon: `LEGO-Element-Lookup-v1.2.0-macOS-arm64.dmg`
+- macOS Intel: `LEGO-Element-Lookup-v1.2.0-macOS-x86_64.dmg`
+- Windows 10/11: `LEGO-Element-Lookup-v1.2.0-Windows-x86_64-Setup.exe`
+- Linux: `LEGO-Element-Lookup-v1.2.0-Linux-x86_64.AppImage`
+
+On first launch, the setup wizard asks for your Rebrickable API key, default set, and cache location. The key is saved in the operating system keychain when available and is never included in the application. If secure storage is unavailable, the wizard can retain it only for the current session. After the inventory downloads, lookups work offline.
+
+The main window accepts repeated element IDs, shows a cached thumbnail of the LEGO part alongside its part and colour information, renders the cached RGB swatch, and automatically copies the part code. Part thumbnails load asynchronously from Rebrickable the first time they are viewed and are then retained in the local preview cache. Offline lookups remain available even when a preview has not yet been cached. The window also provides controls to copy again, change sets, update the inventory, edit settings, and open the cache folder.
+
+### Unsigned beta warnings
+
+Early desktop releases are unsigned:
+
+- **macOS:** Gatekeeper may report an unidentified developer. In System Settings, open **Privacy & Security** and approve this specific application. Do not disable Gatekeeper globally.
+- **Windows:** SmartScreen may show an Unknown Publisher warning. Confirm the filename and compare it with `SHA256SUMS.txt` before choosing **Run anyway**.
+- **Linux:** make the AppImage executable in file properties if necessary. Some systems require FUSE; use the `.tar.gz` fallback when AppImage cannot start.
+
+Always verify the release checksum before bypassing an operating-system warning.
 
 ## Quick start
 

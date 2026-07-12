@@ -28,6 +28,7 @@ class Match:
     part_name: str
     colour_name: str
     rgb: str | None = None
+    part_img_url: str | None = None
     quantity: int = 0
     spare_quantity: int = 0
 
@@ -52,6 +53,28 @@ def lego_colour(colour: dict[str, Any]) -> tuple[str, str]:
     return code, name
 
 
+def validate_inventory_data(data: object) -> list[dict[str, Any]]:
+    """Validate the cache envelope and fields required by lookup."""
+    results = data.get("results") if isinstance(data, dict) else data
+    if not isinstance(results, list) or not all(isinstance(item, dict) for item in results):
+        raise CacheFormatError("The cache must contain a list of inventory entries.")
+    for index, entry in enumerate(results):
+        part = entry.get("part")
+        colour = entry.get("color")
+        if not isinstance(part, dict) or not isinstance(colour, dict):
+            raise CacheFormatError(f"Inventory entry {index + 1} is missing part or colour data.")
+        if not part.get("part_num") or not part.get("name"):
+            raise CacheFormatError(f"Inventory entry {index + 1} is missing required part fields.")
+        quantity = entry.get("quantity", 0)
+        if isinstance(quantity, bool) or not isinstance(quantity, (int, str)):
+            raise CacheFormatError(f"Inventory entry {index + 1} has an invalid quantity.")
+        try:
+            int(quantity)
+        except (TypeError, ValueError):
+            raise CacheFormatError(f"Inventory entry {index + 1} has an invalid quantity.") from None
+    return results
+
+
 def load_inventory(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         raise CacheMissingError(
@@ -63,10 +86,10 @@ def load_inventory(path: Path) -> list[dict[str, Any]]:
         raise CacheFormatError(f"The cache file is not valid JSON: {path}") from exc
     except OSError as exc:
         raise CacheError(f"Could not read cache file {path}: {exc}") from exc
-    results = data.get("results") if isinstance(data, dict) else data
-    if not isinstance(results, list) or not all(isinstance(item, dict) for item in results):
-        raise CacheFormatError(f"The cache file has an unexpected format: {path}")
-    return results
+    try:
+        return validate_inventory_data(data)
+    except CacheFormatError as exc:
+        raise CacheFormatError(f"The cache file has an unexpected format: {path}. {exc}") from exc
 
 
 def find_matches(inventory: Iterable[dict[str, Any]], element_id: str) -> list[Match]:
@@ -79,7 +102,15 @@ def find_matches(inventory: Iterable[dict[str, Any]], element_id: str) -> list[M
         code, name = lego_colour(entry.get("color") or {})
         key = (str(part.get("part_num") or "Unknown"), code, str(part.get("name") or "Unknown"), name)
         rgb = (entry.get("color") or {}).get("rgb")
-        match = combined.setdefault(key, Match(*key, rgb=str(rgb) if rgb else None))
+        image_url = part.get("part_img_url")
+        match = combined.setdefault(
+            key,
+            Match(
+                *key,
+                rgb=str(rgb) if rgb else None,
+                part_img_url=str(image_url).strip() if image_url else None,
+            ),
+        )
         try:
             quantity = int(entry.get("quantity") or 0)
         except (TypeError, ValueError):

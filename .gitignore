@@ -6,6 +6,10 @@ __pycache__/
 venv/
 build/
 dist/
+.pyinstaller/
+assets/icon.png
+assets/icon.ico
+assets/icon.icns
 .DS_Store
 ._*
 

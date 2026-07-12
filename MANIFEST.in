@@ -1,2 +1,7 @@
 include CHANGELOG.md
+include SECURITY.md
+recursive-include assets *.py
+recursive-include packaging *
 global-exclude ._*
+global-exclude *.py[cod]
+prune **/__pycache__

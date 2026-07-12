@@ -1,0 +1,98 @@
+name: desktop release builds
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: sudo apt-get update && sudo apt-get install -y python3-tk xvfb
+      - run: python -m pip install . pytest
+      - run: xvfb-run -a pytest
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            asset: macOS-arm64
+            arch: arm64
+          - os: macos-15-intel
+            asset: macOS-x86_64
+            arch: x86_64
+          - os: windows-2022
+            asset: Windows-x86_64
+            arch: x86_64
+          - os: ubuntu-22.04
+            asset: Linux-x86_64
+            arch: x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Read package version
+        shell: bash
+        run: python -c "import tomllib; print('APP_VERSION='+tomllib.load(open('pyproject.toml','rb'))['project']['version'])" >> "$GITHUB_ENV"
+      - name: Verify release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: test "$GITHUB_REF_NAME" = "v$APP_VERSION"
+      - name: Linux prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-tk libfuse2
+      - run: python -m pip install ".[packaging]" Pillow
+      - run: python assets/generate_icons.py
+      - run: python -m PyInstaller --clean --noconfirm packaging/pyinstaller/lego-element-lookup.spec
+      - name: Smoke test macOS
+        if: runner.os == 'macOS'
+        run: '"dist/LEGO Element Lookup.app/Contents/MacOS/LEGO Element Lookup" --smoke-test'
+      - name: Package macOS
+        if: runner.os == 'macOS'
+        run: sh packaging/macos/create-dmg.sh "$APP_VERSION" "${{ matrix.arch }}"
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:APP_VERSION" packaging\windows\installer.iss'
+      - name: Linux AppImage tooling
+        if: runner.os == 'Linux'
+        run: |
+          curl -L --fail -o /tmp/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x /tmp/appimagetool
+          PATH="/tmp:$PATH" sh packaging/linux/build-appimage.sh "$APP_VERSION"
+      - name: Smoke test Linux AppImage
+        if: runner.os == 'Linux'
+        run: dist/*.AppImage --appimage-extract-and-run --smoke-test
+      - name: Verify no test secret is bundled
+        shell: bash
+        run: '! grep -R -a -F "TEST-KEY-MUST-NOT-BE-BUNDLED" dist'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: |
+            dist/*.dmg
+            dist/*Setup.exe
+            dist/*.AppImage
+            dist/*.tar.gz
+
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {path: release-assets, merge-multiple: true}
+      - run: cd release-assets && sha256sum * > LEGO-Element-Lookup-${GITHUB_REF_NAME}-SHA256SUMS.txt
+      - env: {GH_TOKEN: "${{ github.token }}"}
+        run: gh release create "$GITHUB_REF_NAME" release-assets/* --draft --verify-tag --title "LEGO Element Lookup $GITHUB_REF_NAME" --generate-notes

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Asynchronously cached Rebrickable part thumbnails in the desktop result card, with
+  safe offline placeholders and bounded image validation.
+
+### Changed
+
+- Polished the desktop result layout and centred the studs in generated application icons.
+
+## [1.2.0] - 2026-07-12
+
+### Added
+
+- Tkinter desktop edition with a guided first-run wizard and persistent lookup window.
+- Operating-system keychain storage for Rebrickable API keys, with a session-only fallback.
+- Native PyInstaller packaging definitions for macOS, Windows, and Linux release assets.
+- Background inventory downloads, set management, settings, and visible clipboard confirmation.
+
+### Security
+
+- Strict HTTPS pagination validation, bounded responses, sanitised download errors, and stronger cache validation.
+
 ## [1.1.0] - 2026-07-12
 
 ### Added
@@ -32,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guided setup scripts for macOS, Windows, and Linux.
 - GitHub Actions test matrix covering Python 3.10–3.13 on macOS, Windows, and Linux.
 
-[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MES30004E/lego-element-lookup/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MES30004E/lego-element-lookup/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MES30004E/lego-element-lookup/releases/tag/v1.0.0

@@ -13,6 +13,8 @@ from .clipboard import copy
 from .config import ConfigError, cache_dir, config_path, load_settings
 from .downloader import DownloadError, download_inventory
 from .lookup import CacheError, Match, find_matches, load_inventory
+from .secrets import SecretStore, resolve_api_key
+from .services import ApplicationService
 
 
 def parser() -> argparse.ArgumentParser:
@@ -94,8 +96,7 @@ def lookup_once(element_id: str, set_num: str, directory: Path, *, no_colour: bo
     if not element_id.isdigit():
         print("Please enter a numerical LEGO element ID.", file=sys.stderr)
         return False
-    inventory = load_inventory(directory / f"{set_num}.json")
-    matches = find_matches(inventory, element_id)
+    matches = ApplicationService.lookup_cached(element_id, set_num, directory)
     if not matches:
         print(f"No match found for element ID {element_id} in set {set_num}.")
         return False
@@ -145,13 +146,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     try:
         settings = load_settings()
-        directory = cache_dir()
+        directory = getattr(settings, "cache_directory", None) or cache_dir()
         set_num = getattr(args, "set_num", None) or settings.default_set
         if args.command in {"download", "update"}:
-            if not settings.api_key:
+            api_key = resolve_api_key(SecretStore(), settings.api_key)
+            if not api_key:
                 print(f"No Rebrickable API key is configured. Add it to {config_path()} or set REBRICKABLE_API_KEY.", file=sys.stderr)
                 return 2
-            count = download_inventory(set_num, settings.api_key, directory / f"{set_num}.json")
+            count = download_inventory(set_num, api_key, directory / f"{set_num}.json")
             print(f"Downloaded {count} inventory entries for set {set_num} to {directory / f'{set_num}.json'}")
             return 0
         if args.command == "lookup":

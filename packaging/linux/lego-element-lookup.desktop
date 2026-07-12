@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=LEGO Element Lookup
+Comment=Look up LEGO element IDs offline
+Exec="LEGO Element Lookup"
+Icon=lego-element-lookup
+Categories=Utility;
+Terminal=false

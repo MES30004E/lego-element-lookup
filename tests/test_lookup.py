@@ -14,6 +14,7 @@ def test_top_level_element_id(entries):
 def test_image_element_id(entries):
     match = find_matches(entries, "6293739")[0]
     assert (match.part_code, match.part_name) == ("2420", "Plate 2 x 2 Corner")
+    assert match.part_img_url.endswith("/6293739.jpg?x=1")
 
 
 def test_normal_and_spare_duplicates_are_combined(entries):
