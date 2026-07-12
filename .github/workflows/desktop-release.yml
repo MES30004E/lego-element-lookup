@@ -91,6 +91,9 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with: {path: release-assets, merge-multiple: true}
       - run: cd release-assets && sha256sum * > LEGO-Element-Lookup-${GITHUB_REF_NAME}-SHA256SUMS.txt
