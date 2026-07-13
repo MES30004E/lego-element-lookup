@@ -34,10 +34,10 @@ The downloadable desktop edition bundles Python. End users do not need to instal
 
 Download the appropriate v1.2 release asset:
 
-- macOS Apple Silicon: `LEGO-Element-Lookup-v1.2.1-macOS-arm64.dmg`
-- macOS Intel: `LEGO-Element-Lookup-v1.2.1-macOS-x86_64.dmg`
-- Windows 10/11: `LEGO-Element-Lookup-v1.2.1-Windows-x86_64-Setup.exe`
-- Linux: `LEGO-Element-Lookup-v1.2.1-Linux-x86_64.AppImage`
+- macOS Apple Silicon: `LEGO-Element-Lookup-v1.2.2-macOS-arm64.dmg`
+- macOS Intel: `LEGO-Element-Lookup-v1.2.2-macOS-x86_64.dmg`
+- Windows 10/11: `LEGO-Element-Lookup-v1.2.2-Windows-x86_64-Setup.exe`
+- Linux: `LEGO-Element-Lookup-v1.2.2-Linux-x86_64.AppImage`
 
 On first launch, the setup wizard asks for your Rebrickable API key, default set, and cache location. The key is saved in the operating system keychain when available and is never included in the application. If secure storage is unavailable, the wizard can retain it only for the current session. After the inventory downloads, lookups work offline.
 

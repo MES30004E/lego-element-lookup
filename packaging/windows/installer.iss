@@ -1,6 +1,6 @@
 #define AppName "LEGO Element Lookup"
 #ifndef AppVersion
-  #define AppVersion "1.2.1"
+  #define AppVersion "1.2.2"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\..\dist\LEGO Element Lookup"

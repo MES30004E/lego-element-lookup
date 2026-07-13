@@ -91,7 +91,7 @@ def test_cancelled_download_does_not_replace_cache(tmp_path):
 
 def test_desktop_smoke_mode_does_not_open_tk(capsys):
     assert app.main(["--smoke-test"]) == 0
-    assert "LEGO Element Lookup 1.2.1" in capsys.readouterr().out
+    assert "LEGO Element Lookup 1.2.2" in capsys.readouterr().out
 
 
 def test_background_task_delivers_widget_callbacks_on_polling_thread():
