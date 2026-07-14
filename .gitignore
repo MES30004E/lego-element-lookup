@@ -10,6 +10,9 @@ dist/
 assets/icon.png
 assets/icon.ico
 assets/icon.icns
+assets/dmg/*.png
+assets/installer/windows/*.bmp
+assets/linux/icons/**/*.png
 .DS_Store
 ._*
 

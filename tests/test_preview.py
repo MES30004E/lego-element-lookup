@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import io
+import importlib.util
+from pathlib import Path
 
 import pytest
 from PIL import Image
 
-from lego_element_lookup.icon_generation import draw_icon, stud_centres
+from lego_element_lookup.icon_generation import brick_bounds, draw_icon, stud_centres, tile_bounds
 from lego_element_lookup import preview
 from lego_element_lookup.preview import PreviewCache, PreviewError
 
@@ -75,9 +77,39 @@ def test_missing_preview_has_clean_fallback(tmp_path):
         cache.fetch(None)
 
 
-@pytest.mark.parametrize("size", [16, 32, 64, 128, 256, 512])
+@pytest.mark.parametrize("size", [16, 32, 64, 128, 256, 512, 1024])
 def test_icon_studs_are_centred(size):
     centres = stud_centres(size)
     assert sum(x for x, _ in centres) / len(centres) == size / 2
     assert sum(y for _, y in centres) / len(centres) == size / 2
     assert draw_icon(size).size == (size, size)
+
+
+@pytest.mark.parametrize("size", [16, 32, 64, 128, 256, 512, 1024])
+def test_icon_geometry_is_symmetric_with_consistent_outer_margins(size):
+    tile = tile_bounds(size)
+    brick = brick_bounds(size)
+    assert tile[0] == tile[1]
+    assert size - 1 - tile[2] == tile[0]
+    assert size - 1 - tile[3] == tile[1]
+    assert brick[0] == size - 1 - brick[2]
+    assert brick[1] == size - 1 - brick[3]
+    centres = stud_centres(size)
+    xs = sorted({x for x, _ in centres}); ys = sorted({y for _, y in centres})
+    assert xs[0] + xs[1] == 2 * (size // 2)
+    assert ys[0] + ys[1] == 2 * (size // 2)
+    assert draw_icon(size).getpixel((0, 0))[3] == 0
+
+
+def test_generated_icon_formats_are_valid(tmp_path):
+    script = Path(__file__).parents[1] / "assets" / "generate_icons.py"
+    spec = importlib.util.spec_from_file_location("project_icon_generator", script)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.generate_assets(tmp_path)
+    expected = {"icon.png": "PNG", "icon.icns": "ICNS", "icon.ico": "ICO"}
+    for name, image_format in expected.items():
+        with Image.open(tmp_path / name) as image:
+            assert image.format == image_format
+            assert image.width > 0 and image.height > 0

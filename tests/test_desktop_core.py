@@ -12,14 +12,18 @@ from lego_element_lookup.downloader import DownloadError
 from lego_element_lookup.gui import app
 from lego_element_lookup.gui.tasks import BackgroundTask
 from lego_element_lookup.secrets import SecretStore, resolve_api_key
+from lego_element_lookup import services
 from lego_element_lookup.services import ApplicationService, ValidationError
+from lego_element_lookup.set_metadata import SetMetadataError
 
 
 class FakeKeyring:
     def __init__(self):
         self.value = None
+        self.get_calls = 0
 
     def get_password(self, service, username):
+        self.get_calls += 1
         return self.value
 
     def set_password(self, service, username, password):
@@ -65,10 +69,73 @@ def test_service_configures_keychain_without_writing_secret(tmp_path):
     assert service.settings.setup_complete is True
 
 
-@pytest.mark.parametrize("value", ["", "abc", "76344", "76344-one"])
+def test_existing_inventory_does_not_force_onboarding_for_pre_schema_three_settings(tmp_path):
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    (cache / "76344-1.json").write_text(json.dumps({"schema_version": 1, "set_num": "76344-1", "results": []}), encoding="utf-8")
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps({"schema_version": 2, "default_set": "76344-1", "cache_directory": str(cache)}), encoding="utf-8")
+    service = ApplicationService(settings_path=config_path, secret_store=SecretStore(FakeKeyring()))
+    assert service.settings.setup_complete is False
+    assert service.setup_required is False
+
+
+def test_keychain_is_read_only_once_per_session():
+    backend = FakeKeyring(); backend.value = "session-secret"
+    store = SecretStore(backend)
+    assert store.get() == "session-secret"
+    assert store.get() == "session-secret"
+    assert backend.get_calls == 1
+
+
+def test_denied_keychain_access_does_not_loop():
+    class Denied(FakeKeyring):
+        def get_password(self, service, username):
+            self.get_calls += 1
+            raise RuntimeError("denied")
+    backend = Denied(); store = SecretStore(backend)
+    with pytest.raises(Exception, match="not allowed"):
+        store.get()
+    assert store.get() is None
+    assert backend.get_calls == 1
+
+
+def test_service_reuses_and_clears_session_key(tmp_path):
+    backend = FakeKeyring(); backend.value = "stored-secret"
+    service = ApplicationService(settings_path=tmp_path / "config.json", secret_store=SecretStore(backend))
+    assert service.api_key() == "stored-secret"
+    assert service.api_key() == "stored-secret" and backend.get_calls == 1
+    service.replace_api_key("replacement", remember=False)
+    assert service.api_key() == "replacement"
+    service.remove_api_key()
+    assert service._session_api_key is None
+
+
+def test_inventory_and_set_downloads_reuse_retrieved_key(monkeypatch, tmp_path):
+    backend = FakeKeyring(); backend.value = "stored-secret"
+    service = ApplicationService(settings_path=tmp_path / "config.json", secret_store=SecretStore(backend))
+    service.settings = Settings(None, "76344-1", tmp_path / "cache", True)
+    keys = []
+    monkeypatch.setattr(services, "download_inventory", lambda set_num, key, destination, **kwargs: keys.append(key) or 1)
+    monkeypatch.setattr(services, "fetch_set_metadata", lambda set_num, key: (_ for _ in ()).throw(SetMetadataError("optional")))
+    service.download()
+    service.download(set_num="76345-1")
+    assert keys == ["stored-secret", "stored-secret"]
+    assert backend.get_calls == 1
+
+
+@pytest.mark.parametrize("value", ["", "abc", "76344-one"])
 def test_invalid_set_numbers_are_rejected(value):
     with pytest.raises(ValidationError):
         ApplicationService.validate_set_num(value)
+
+
+@pytest.mark.parametrize(
+    ("value", "canonical"),
+    [("10334", "10334-1"), ("10334-1", "10334-1"), (" 10334 ", "10334-1"), (" 10334-1 ", "10334-1")],
+)
+def test_human_set_numbers_are_canonicalised(value, canonical):
+    assert ApplicationService.validate_set_num(value) == canonical
 
 
 def test_unsafe_pagination_url_is_rejected(monkeypatch, tmp_path):
@@ -91,7 +158,7 @@ def test_cancelled_download_does_not_replace_cache(tmp_path):
 
 def test_desktop_smoke_mode_does_not_open_tk(capsys):
     assert app.main(["--smoke-test"]) == 0
-    assert "LEGO Element Lookup 1.2.2" in capsys.readouterr().out
+    assert "LEGO Element Lookup 1.4.0" in capsys.readouterr().out
 
 
 def test_background_task_delivers_widget_callbacks_on_polling_thread():

@@ -32,6 +32,20 @@ class Match:
     quantity: int = 0
     spare_quantity: int = 0
 
+    @property
+    def candidate_id(self) -> tuple[str, str, str, str, str | None, str | None, int, int]:
+        """Stable identity used to reject stale asynchronous GUI callbacks."""
+        return (
+            self.part_code,
+            self.colour_code,
+            self.part_name,
+            self.colour_name,
+            self.rgb,
+            self.part_img_url,
+            self.quantity,
+            self.spare_quantity,
+        )
+
 
 def image_element_id(entry: dict[str, Any]) -> str:
     url = str((entry.get("part") or {}).get("part_img_url") or "").strip()

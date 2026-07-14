@@ -3,13 +3,14 @@ set -eu
 
 VERSION="${1:?version required}"
 ARCH="${2:?architecture required}"
-APP="dist/LEGO Element Lookup.app"
-OUTPUT="dist/LEGO-Element-Lookup-v${VERSION}-macOS-${ARCH}.dmg"
+APP="${APP:-dist/LEGO Element Lookup.app}"
+OUTPUT_DIR="${OUTPUT_DIR:-dist}"
+OUTPUT="$OUTPUT_DIR/LEGO-Element-Lookup-v${VERSION}-macOS-${ARCH}.dmg"
 VOLUME_LABEL="LEGO Element Lookup"
 MAX_ATTEMPTS=3
+PYTHON="${PYTHON:-python3}"
 TMP_BASE="${TMPDIR:-/tmp}"
 WORK_DIR="$(mktemp -d "${TMP_BASE%/}/lego-element-lookup-dmg-${ARCH}.XXXXXX")"
-STAGING="$WORK_DIR/staging"
 TEMP_DMG="$WORK_DIR/LEGO-Element-Lookup-v${VERSION}-macOS-${ARCH}.working.dmg"
 MOUNTS_FILE="$WORK_DIR/owned-mounts.txt"
 INFO_FILE="$WORK_DIR/hdiutil-info.plist"
@@ -75,24 +76,23 @@ if [ ! -d "$APP" ]; then
     exit 1
 fi
 
-detach_owned_mounts
-rm -f "$OUTPUT"
-find dist -maxdepth 1 -type f -name "$(basename "$OUTPUT").tmp-*" -exec rm -f {} \;
-rm -rf build/dmg
+BACKGROUND="${DMG_BACKGROUND:-assets/dmg/background@2x.png}"
+if [ ! -f "$BACKGROUND" ]; then
+    echo "DMG background not found: $BACKGROUND. Run python assets/generate_icons.py first." >&2
+    exit 1
+fi
 
-mkdir -p "$STAGING"
-cp -R "$APP" "$STAGING/"
-ln -s /Applications "$STAGING/Applications"
+detach_owned_mounts
+mkdir -p "$OUTPUT_DIR"
+rm -f "$OUTPUT"
+find "$OUTPUT_DIR" -maxdepth 1 -type f -name "$(basename "$OUTPUT").tmp-*" -exec rm -f {} \;
 
 attempt=1
 while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
     rm -f "$TEMP_DMG"
     echo "Creating macOS DMG (attempt $attempt of $MAX_ATTEMPTS)…"
-    if hdiutil create \
-        -volname "$VOLUME_LABEL" \
-        -srcfolder "$STAGING" \
-        -format UDZO \
-        "$TEMP_DMG"; then
+    if DMG_APPLICATION="$APP" DMG_BACKGROUND="$BACKGROUND" \
+        "$PYTHON" -m dmgbuild -s packaging/macos/dmg_settings.py "$VOLUME_LABEL" "$TEMP_DMG"; then
         mv "$TEMP_DMG" "$OUTPUT"
         echo "$OUTPUT"
         exit 0

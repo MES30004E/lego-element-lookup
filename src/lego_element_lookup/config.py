@@ -5,13 +5,87 @@ from __future__ import annotations
 import json
 import os
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Mapping
 
 APP_NAME = "lego-element-lookup"
 DEFAULT_SET = "76344-1"
-CONFIG_SCHEMA_VERSION = 2
+CONFIG_SCHEMA_VERSION = 3
+
+
+@dataclass(frozen=True)
+class Preferences:
+    """Non-secret desktop presentation and lookup preferences."""
+    theme: str = "system"
+    density: str = "comfortable"
+    auto_copy: bool = True
+    show_copied_confirmation: bool = True
+    refocus_input: bool = True
+    show_lego_colour_code: bool = True
+    show_inventory_quantity: bool = True
+    previews_enabled: bool = True
+    auto_download_previews: bool = True
+    preview_size: str = "medium"
+    preview_cache_directory: Path | None = None
+    preview_cache_limit_mb: int = 250
+    preview_cache_eviction: str = "oldest"
+    set_thumbnails_enabled: bool = True
+    auto_cache_set_thumbnails: bool = True
+    relationship_download_mode: str = "manual"
+    update_channel: str = "stable"
+    automatic_update_checks: bool = False
+    window_layout_preset: str = "auto"
+    last_window_width: int = 0
+    last_window_height: int = 0
+    extra: dict[str, object] = field(default_factory=dict, compare=False, repr=False)
+
+
+def _preferences(value: object) -> Preferences:
+    data = value if isinstance(value, dict) else {}
+    def choice(key: str, allowed: set[str], default: str) -> str:
+        candidate = data.get(key, default)
+        return candidate if isinstance(candidate, str) and candidate in allowed else default
+    def boolean(key: str, default: bool) -> bool:
+        return data[key] if isinstance(data.get(key), bool) else default
+    def bounded_int(key: str, default: int) -> int:
+        value = data.get(key, default)
+        return value if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 10_000 else default
+    def window_dimension(key: str, minimum: int, maximum: int) -> int:
+        value = data.get(key, 0)
+        return value if isinstance(value, int) and not isinstance(value, bool) and minimum <= value <= maximum else 0
+    known = {field for field in Preferences.__dataclass_fields__ if field != "extra"}
+    directory = data.get("preview_cache_directory")
+    return Preferences(
+        theme=choice("theme", {"system", "light", "dark"}, "system"),
+        density=choice("density", {"comfortable", "compact"}, "comfortable"),
+        auto_copy=boolean("auto_copy", True), show_copied_confirmation=boolean("show_copied_confirmation", True),
+        refocus_input=boolean("refocus_input", True), show_lego_colour_code=boolean("show_lego_colour_code", True),
+        show_inventory_quantity=boolean("show_inventory_quantity", True), previews_enabled=boolean("previews_enabled", True),
+        auto_download_previews=boolean("auto_download_previews", True),
+        preview_size=choice("preview_size", {"small", "medium", "large"}, "medium"),
+        preview_cache_directory=Path(directory).expanduser() if isinstance(directory, str) and directory else None,
+        preview_cache_limit_mb=bounded_int("preview_cache_limit_mb", 250),
+        preview_cache_eviction=choice("preview_cache_eviction", {"oldest", "never"}, "oldest"),
+        set_thumbnails_enabled=boolean("set_thumbnails_enabled", True),
+        auto_cache_set_thumbnails=boolean("auto_cache_set_thumbnails", True),
+        relationship_download_mode=choice("relationship_download_mode", {"manual"}, "manual"),
+        update_channel=choice("update_channel", {"stable", "beta"}, "stable"),
+        automatic_update_checks=boolean("automatic_update_checks", False),
+        window_layout_preset=choice("window_layout_preset", {"auto", "wide", "tall", "compact"}, "auto"),
+        last_window_width=window_dimension("last_window_width", 640, 7680),
+        last_window_height=window_dimension("last_window_height", 720, 4320),
+        extra={key: item for key, item in data.items() if key not in known},
+    )
+
+
+def _preferences_data(preferences: Preferences) -> dict[str, object]:
+    data = dict(preferences.extra)
+    for key in Preferences.__dataclass_fields__:
+        if key != "extra":
+            value = getattr(preferences, key)
+            data[key] = str(value) if key == "preview_cache_directory" and value else value
+    return data
 
 
 class ConfigError(RuntimeError):
@@ -51,6 +125,8 @@ class Settings:
     cache_directory: Path | None = None
     setup_complete: bool = False
     schema_version: int = CONFIG_SCHEMA_VERSION
+    preferences: Preferences = field(default_factory=Preferences)
+    extra: dict[str, object] = field(default_factory=dict, compare=False, repr=False)
 
 
 def load_settings(path: Path | None = None, env: Mapping[str, str] | None = None) -> Settings:
@@ -77,12 +153,15 @@ def load_settings(path: Path | None = None, env: Mapping[str, str] | None = None
         parsed_version = int(schema_version)
     except (TypeError, ValueError):
         parsed_version = 1
+    known = {"rebrickable_api_key", "default_set", "cache_directory", "setup_complete", "schema_version", "preferences"}
     return Settings(
         str(api_key).strip() if api_key else None,
         str(default_set).strip(),
         Path(str(custom_cache)).expanduser() if custom_cache else None,
         setup_complete,
         parsed_version,
+        _preferences(data.get("preferences")),
+        {key: item for key, item in data.items() if key not in known},
     )
 
 
@@ -95,12 +174,14 @@ def save_settings(settings: Settings, path: Path | None = None) -> None:
     """Atomically save non-secret settings with user-only permissions where supported."""
     path = config_path() if path is None else path
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = {
+    data = dict(settings.extra)
+    data.update({
         "schema_version": CONFIG_SCHEMA_VERSION,
         "default_set": settings.default_set,
         "cache_directory": str(settings.cache_directory) if settings.cache_directory else None,
         "setup_complete": settings.setup_complete,
-    }
+        "preferences": _preferences_data(settings.preferences),
+    })
     temporary = path.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     try:

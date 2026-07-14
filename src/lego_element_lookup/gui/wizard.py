@@ -61,6 +61,7 @@ class SetupWizard(ttk.Frame):
         ttk.Checkbutton(frame, text="Remember securely in the operating system keychain", variable=self.remember).grid(sticky="w", pady=8)
         ttk.Label(frame, text="Default LEGO set number").grid(sticky="w", pady=(12, 4))
         ttk.Entry(frame, textvariable=self.set_num).grid(sticky="ew")
+        ttk.Label(frame, text="Enter a LEGO set number, for example 10334.", style="Muted.TLabel").grid(sticky="w", pady=(4, 0))
         return frame
 
     def _storage(self):

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.mes30004e.lego-element-lookup</id>
+  <name>LEGO Element Lookup</name>
+  <summary>Offline LEGO element ID lookup for downloaded set inventories</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>Look up LEGO element IDs against inventories downloaded from Rebrickable, including colour, quantity, and part-preview information.</p>
+    <p>LEGO is a trademark of the LEGO Group. This project is independent and is not affiliated with or endorsed by the LEGO Group.</p>
+  </description>
+  <url type="homepage">https://github.com/MES30004E/lego-element-lookup</url>
+  <url type="bugtracker">https://github.com/MES30004E/lego-element-lookup/issues</url>
+  <launchable type="desktop-id">io.github.mes30004e.lego-element-lookup.desktop</launchable>
+  <provides><binary>lego-element-lookup</binary></provides>
+  <releases><release version="@VERSION@" date="2026-07-14"/></releases>
+</component>

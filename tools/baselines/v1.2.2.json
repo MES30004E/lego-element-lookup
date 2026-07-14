@@ -1,0 +1,11 @@
+{
+  "version": "1.2.2",
+  "measurement_status": "reported during desktop-release planning; the original artefacts are not present in this checkout",
+  "assets": [
+    {"name": "macOS arm64 DMG", "reported_mebibytes": 18.0},
+    {"name": "macOS Intel DMG", "reported_mebibytes": 19.4},
+    {"name": "Windows x86_64 installer", "reported_mebibytes": 15.5},
+    {"name": "Linux x86_64 AppImage", "reported_mebibytes": 36.1},
+    {"name": "Linux x86_64 tarball", "reported_mebibytes": 38.7}
+  ]
+}

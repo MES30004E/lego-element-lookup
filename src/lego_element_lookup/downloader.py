@@ -9,6 +9,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+from . import __version__
 from .lookup import validate_inventory_data
 
 BASE_URL = "https://rebrickable.com/api/v3/lego/sets"
@@ -32,12 +33,17 @@ def _validate_url(url: str) -> None:
 
 def _request_json(url: str, api_key: str) -> dict[str, Any]:
     _validate_url(url)
-    request = Request(url, headers={"Authorization": f"key {api_key}", "User-Agent": "lego-element-lookup/1.2"})
+    request = Request(url, headers={"Authorization": f"key {api_key}", "User-Agent": f"lego-element-lookup/{__version__}"})
     try:
         with urlopen(request, timeout=30) as response:
             payload = response.read(MAX_RESPONSE_BYTES + 1)
     except HTTPError as exc:
-        message = "API key was rejected" if exc.code in (401, 403) else f"Rebrickable returned HTTP {exc.code}"
+        if exc.code in (401, 403):
+            message = "API key was rejected"
+        elif exc.code == 404:
+            message = "the requested set was not found"
+        else:
+            message = f"Rebrickable returned HTTP {exc.code}"
         raise DownloadError(f"Download failed: {message}.") from None
     except (URLError, TimeoutError):
         raise DownloadError("Download failed: Rebrickable could not be reached.") from None

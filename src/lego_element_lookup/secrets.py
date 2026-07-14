@@ -32,18 +32,28 @@ def _default_backend() -> KeyringBackend:
 class SecretStore:
     backend: KeyringBackend | None = None
     _session_key: str | None = field(default=None, init=False, repr=False)
+    _retrieval_attempted: bool = field(default=False, init=False, repr=False)
+    _access_error: bool = field(default=False, init=False, repr=False)
 
     def _keyring(self) -> KeyringBackend:
         return self.backend or _default_backend()
 
     def get(self) -> str | None:
-        if self._session_key:
+        if self._retrieval_attempted:
             return self._session_key
         try:
             value = self._keyring().get_password(SERVICE_NAME, ACCOUNT_NAME)
         except Exception as exc:
-            raise SecretStoreError("The operating system keychain is unavailable.") from exc
-        return value.strip() if value else None
+            self._retrieval_attempted = True
+            self._access_error = True
+            raise SecretStoreError("Secure keychain access was not allowed. Enter the API key again to use it for this session.") from exc
+        self._retrieval_attempted = True
+        self._session_key = value.strip() if value else None
+        return self._session_key
+
+    @property
+    def access_denied(self) -> bool:
+        return self._access_error
 
     def save(self, api_key: str) -> None:
         value = api_key.strip()
@@ -53,15 +63,27 @@ class SecretStore:
             self._keyring().set_password(SERVICE_NAME, ACCOUNT_NAME, value)
         except Exception as exc:
             raise SecretStoreError("The API key could not be saved to the operating system keychain.") from exc
+        self._session_key = value
+        self._retrieval_attempted = True
+        self._access_error = False
 
     def save_for_session(self, api_key: str) -> None:
         value = api_key.strip()
         if not value:
             raise SecretStoreError("The API key cannot be blank.")
         self._session_key = value
+        self._retrieval_attempted = True
+        self._access_error = False
+
+    def clear_session(self) -> None:
+        self._session_key = None
+        self._retrieval_attempted = False
+        self._access_error = False
 
     def delete(self) -> None:
         self._session_key = None
+        self._retrieval_attempted = True
+        self._access_error = False
         try:
             self._keyring().delete_password(SERVICE_NAME, ACCOUNT_NAME)
         except Exception as exc:

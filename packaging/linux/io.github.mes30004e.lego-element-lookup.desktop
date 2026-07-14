@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=LEGO Element Lookup
+GenericName=LEGO element lookup
+Comment=Look up LEGO element IDs in downloaded set inventories
+Exec=lego-element-lookup
+Icon=io.github.mes30004e.lego-element-lookup
+Categories=Utility;Education;
+Keywords=LEGO;brick;element;inventory;offline;Rebrickable;
+Terminal=false
+StartupNotify=true
