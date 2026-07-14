@@ -6,7 +6,7 @@ import hashlib
 import io
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Iterable
@@ -66,9 +66,9 @@ class RelationshipCache:
         except (OSError, json.JSONDecodeError, RelationshipDataError, ValueError):
             return RelationshipCacheResult(RelationshipCacheState.INVALID)
         index = RelationshipIndex(relationships)
-        current_time = now or datetime.now(UTC)
+        current_time = now or datetime.now(timezone.utc)
         if current_time.tzinfo is None:
-            current_time = current_time.replace(tzinfo=UTC)
+            current_time = current_time.replace(tzinfo=timezone.utc)
         state = (
             RelationshipCacheState.STALE
             if current_time - metadata.downloaded_at > stale_after
@@ -88,7 +88,7 @@ class RelationshipCache:
         return self._write(
             relationships,
             source_url=source_url,
-            downloaded_at=downloaded_at or datetime.now(UTC),
+            downloaded_at=downloaded_at or datetime.now(timezone.utc),
             sha256=hashlib.sha256(payload).hexdigest(),
         )
 
@@ -104,7 +104,11 @@ class RelationshipCache:
             raise RelationshipDataError("Relationship cache source URL must use HTTPS.")
         if len(sha256) != 64 or any(character not in "0123456789abcdef" for character in sha256.lower()):
             raise RelationshipDataError("Relationship cache SHA-256 is invalid.")
-        timestamp = downloaded_at.astimezone(UTC) if downloaded_at.tzinfo else downloaded_at.replace(tzinfo=UTC)
+        timestamp = (
+            downloaded_at.astimezone(timezone.utc)
+            if downloaded_at.tzinfo
+            else downloaded_at.replace(tzinfo=timezone.utc)
+        )
         records = sorted(
             set(relationships),
             key=lambda relationship: (
@@ -185,7 +189,12 @@ def _decode_cache(data: object) -> tuple[RelationshipCacheMetadata, tuple[PartRe
         if child != parent:
             relationships.append(PartRelationship(relationship_type, child, parent))
     return (
-        RelationshipCacheMetadata(CACHE_SCHEMA_VERSION, source_url, timestamp.astimezone(UTC), sha256.lower()),
+        RelationshipCacheMetadata(
+            CACHE_SCHEMA_VERSION,
+            source_url,
+            timestamp.astimezone(timezone.utc),
+            sha256.lower(),
+        ),
         tuple(
             sorted(
                 set(relationships),

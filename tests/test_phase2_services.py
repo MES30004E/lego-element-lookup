@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import gzip
 import io
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from PIL import Image
@@ -54,7 +54,7 @@ def test_relationship_service_reports_optional_states_and_direct_groups(monkeypa
     assert not designs.moulds
     assert RELATED_DESIGN_LABELS[next(iter(designs.groups))] == "Alternate designs"
     cache = RelationshipCache(tmp_path / "cache")
-    assert cache.load(now=datetime.now(UTC) + timedelta(days=31)).state is RelationshipCacheState.STALE
+    assert cache.load(now=datetime.now(timezone.utc) + timedelta(days=31)).state is RelationshipCacheState.STALE
 
 
 def test_relationship_refresh_cancellation_and_failure_preserve_old_cache(monkeypatch, tmp_path):

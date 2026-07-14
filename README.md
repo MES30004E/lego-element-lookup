@@ -2,24 +2,11 @@
 
 [![Tests](https://github.com/MES30004E/lego-element-lookup/actions/workflows/tests.yml/badge.svg)](https://github.com/MES30004E/lego-element-lookup/actions/workflows/tests.yml)
 
-LEGO Element Lookup is a small command-line tool for people rebuilding LEGO sets in Mecabricks. Enter the element ID printed in an instruction manual and it reports the part code first, the official LEGO colour code second, plus their names. The part code is copied to the clipboard automatically.
+LEGO Element Lookup is a cross-platform desktop application for identifying LEGO parts from the element IDs printed in instruction manuals. It is designed for builders who need to translate those IDs quickly when recreating sets in tools such as Mecabricks.
 
-Version 1.4 includes a desktop application for people who prefer not to use a terminal. Download the installer for your operating system from GitHub Releases and launch **LEGO Element Lookup**.
+Enter an element ID and the app finds the matching part code, official LEGO colour code, part and colour names, inventory quantity, preview image, and source-backed related designs. It can automatically copy the part code for fast use in other tools.
 
-Lookups use a downloaded Rebrickable set inventory and are fully offline. The tool checks both Rebrickable's top-level `element_id` and the element number in `part_img_url`, because either can contain the manual's identifier.
-
-```text
-$ lego-lookup 6212040
-Part code:    35480
-Colour code:  154
-
-Part name:    Plate Special 1 x 2 Rounded with 2 Open Studs
-Colour:       Dark red
-Swatch:       ██████████  #720E0F
-Inventory:    quantity 22
-
-Part code copied to clipboard.
-```
+After a set inventory has been downloaded, lookups work offline on macOS, Windows, and Linux. Native desktop builds are available from GitHub Releases, and a supported command-line interface is included for scripting and terminal workflows.
 
 ## Requirements
 
@@ -139,7 +126,7 @@ As an alternative, set `REBRICKABLE_API_KEY` in your environment. `LEGO_LOOKUP_S
 
 `XDG_CONFIG_HOME` and `XDG_CACHE_HOME` are respected on Linux. Print the actual paths with `lego-lookup config-path` and `lego-lookup cache-path`.
 
-## Use the tool
+## Command-line interface
 
 Download the test set once:
 

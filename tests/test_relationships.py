@@ -3,7 +3,7 @@ from __future__ import annotations
 import gzip
 import io
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -91,7 +91,7 @@ def test_cache_states_and_metadata(tmp_path):
     assert cache.load().state is RelationshipCacheState.NOT_DOWNLOADED
 
     payload = compressed_csv(["A,child,parent"])
-    timestamp = datetime(2026, 7, 13, tzinfo=UTC)
+    timestamp = datetime(2026, 7, 13, tzinfo=timezone.utc)
     metadata = cache.replace_from_gzip(payload, downloaded_at=timestamp)
     loaded = cache.load(now=timestamp + timedelta(days=1))
     assert loaded.state is RelationshipCacheState.AVAILABLE

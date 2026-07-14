@@ -184,7 +184,12 @@ def test_native_view_menu_dispatches_to_the_same_preset_method(tmp_path):
         app._select_layout_preset = selected.append
         app._build_menu()
         menu = root.nametowidget(root.cget("menu"))
-        view_menu = root.nametowidget(menu.entrycget(3, "menu"))
+        view_index = next(
+            index
+            for index in range(menu.index("end") + 1)
+            if menu.type(index) == "cascade" and menu.entrycget(index, "label") == "View"
+        )
+        view_menu = root.nametowidget(menu.entrycget(view_index, "menu"))
         for index in range(4):
             view_menu.invoke(index)
         assert selected == ["auto", "wide", "tall", "compact"]
