@@ -2,95 +2,193 @@
 
 [![Tests](https://github.com/MES30004E/lego-element-lookup/actions/workflows/tests.yml/badge.svg)](https://github.com/MES30004E/lego-element-lookup/actions/workflows/tests.yml)
 
-LEGO Element Lookup is a cross-platform desktop application for identifying LEGO parts from the element IDs printed in instruction manuals. It is designed for builders who need to translate those IDs quickly when recreating sets in tools such as Mecabricks.
+LEGO Element Lookup is a cross-platform desktop application for identifying LEGO parts from the element IDs printed in instruction manuals. It returns the matching part code, official LEGO colour code, names, inventory quantity, preview image, and source-backed related designs.
 
-Enter an element ID and the app finds the matching part code, official LEGO colour code, part and colour names, inventory quantity, preview image, and source-backed related designs. It can automatically copy the part code for fast use in other tools.
+It is designed for quick building workflows such as Mecabricks and can copy each part code automatically. Once a set inventory has been downloaded, normal lookups work offline.
 
-After a set inventory has been downloaded, lookups work offline on macOS, Windows, and Linux. Native desktop builds are available from GitHub Releases, and a supported command-line interface is included for scripting and terminal workflows.
+Native desktop builds are available for macOS, Windows, and Linux. A command-line interface is also included for scripting and terminal workflows.
 
-## Requirements
+![LEGO Element Lookup desktop application](docs/screenshots/main-app.png)
 
-- Python 3.10 or newer
-- A free Rebrickable account and API key for downloading inventories
-- Internet access only while downloading or updating a set
-- On Linux, `wl-copy`, `xclip`, or `xsel` for automatic clipboard copying
+## Contents
 
-The downloadable desktop edition bundles Python. End users do not need to install Python or use Terminal. Source installations use the lightweight `keyring` package for secure desktop credential storage.
+- [Download](#download)
+- [Features](#features)
+- [Getting started](#getting-started)
+- [Desktop application](#desktop-application)
+- [Managing sets](#managing-sets)
+- [Related designs](#related-designs)
+- [Settings and appearance](#settings-and-appearance)
+- [Security and privacy](#security-and-privacy)
+- [Command-line interface](#command-line-interface)
+- [Troubleshooting](#troubleshooting)
+- [User file locations](#user-file-locations)
+- [Current limitations](#current-limitations)
+- [Roadmap](#roadmap)
+- [Development](#development)
+
+## Download
+
+End users should download a prebuilt desktop release from [GitHub Releases](https://github.com/MES30004E/lego-element-lookup/releases). Python is already included.
+
+| Platform | Download |
+| --- | --- |
+| macOS Apple Silicon | `LEGO-Element-Lookup-v1.4.0-macOS-arm64.dmg` |
+| macOS Intel | `LEGO-Element-Lookup-v1.4.0-macOS-x86_64.dmg` |
+| Windows 10/11 | `LEGO-Element-Lookup-v1.4.0-Windows-x86_64-Setup.exe` |
+| Linux | `LEGO-Element-Lookup-v1.4.0-Linux-x86_64.AppImage` |
+| Linux fallback | `LEGO-Element-Lookup-v1.4.0-Linux-x86_64.tar.gz` |
+
+Desktop builds bundle Python. Installing from source requires Python 3.10 or newer.
+
+## Features
+
+### Lookup
+
+- Convert an element ID into its part code.
+- Show the official colour code, part and colour names, and inventory quantity.
+- Copy the part code automatically.
+- Choose the correct result when an element ID has multiple matches.
+
+### Offline and sets
+
+- Use downloaded inventories without a network connection.
+- Download and switch between multiple sets.
+- Enter ordinary set numbers such as `10334` or canonical numbers such as `10334-1`.
+- Cache set metadata and thumbnails.
+- Remove downloaded sets safely.
+
+### Desktop experience
+
+- Run on macOS, Windows, and Linux.
+- Choose System, Light, or Dark appearance.
+- Use responsive layouts and starting-window presets.
+- Resize freely in both axes.
+- Access native application menus and result-only scrolling.
+
+### Data and previews
+
+- Display and cache part previews.
+- Review, limit, or clear the preview cache.
+- Optionally download Rebrickable related-design data.
+
+## Getting started
+
+1. Download the app for your platform.
+2. Launch LEGO Element Lookup.
+3. Enter your Rebrickable API key.
+4. Enter a set number such as `10334`.
+5. Wait for the inventory to download.
+6. Enter element IDs from the instruction manual.
+
+Internet access is needed for downloading or updating sets and for optional remote previews or relationship data. Cached inventory lookups work offline.
 
 ## Desktop application
 
-Download the appropriate v1.4.0 release asset:
+### First launch
 
-- macOS Apple Silicon: `LEGO-Element-Lookup-v1.4.0-macOS-arm64.dmg`
-- macOS Intel: `LEGO-Element-Lookup-v1.4.0-macOS-x86_64.dmg`
-- Windows 10/11: `LEGO-Element-Lookup-v1.4.0-Windows-x86_64-Setup.exe`
-- Linux AppImage: `LEGO-Element-Lookup-v1.4.0-Linux-x86_64.AppImage`
-- Linux tarball fallback: `LEGO-Element-Lookup-v1.4.0-Linux-x86_64.tar.gz`
+The setup wizard asks for an API key from a free [Rebrickable](https://rebrickable.com/) account, a default set, and an optional cache location. It stores the key in the operating-system keychain when available. If secure storage is unavailable, the key can be retained for the current session only.
 
-On macOS, open the DMG and drag **LEGO Element Lookup** to the **Applications** shortcut shown in its installation window. The DMG contains only the app, the Applications shortcut, and its project-owned installation artwork. The Intel and Apple Silicon images use the same layout.
+### Looking up a part
 
-The Windows installer is a per-user installation: it adds a Start Menu entry, offers an optional desktop shortcut and an optional launch after interactive setup, and leaves your configuration and downloaded caches intact during upgrades or uninstall. It never launches the app during a silent install.
+Enter an element ID and press Enter. The result shows the part code, colour code, part and colour names, quantity, colour swatch, and preview. Successful lookups can copy the part code automatically; when several matches exist, choose one before copying.
 
-On Linux, the AppImage ships a reverse-DNS desktop entry, AppStream metadata, and hicolor icons for desktop integration. Make it executable before starting it. The `.tar.gz` remains available as a fallback for systems where AppImage or FUSE is unavailable.
+Preview images are cached after their first successful download. A missing preview does not prevent an offline inventory lookup.
 
-On first launch, the setup wizard asks for your Rebrickable API key, default set, and cache location. The key is saved in the operating system keychain when available and is never included in the application. If secure storage is unavailable, the wizard can retain it only for the current session. After the inventory downloads, lookups work offline.
+### Responsive interface
 
-The main window accepts repeated element IDs, shows a cached thumbnail of the LEGO part alongside its part and colour information, renders the cached RGB swatch, and automatically copies the part code. When one element ID has multiple inventory matches, the desktop app asks you to choose the part before copying it. Part and set thumbnails load asynchronously from Rebrickable the first time they are viewed and are then retained in the local cache. Offline lookups remain available even when a preview has not yet been cached. A preview can explicitly be loading, cached, not cached, unavailable offline, timed out, rejected as untrusted, or invalid—network failures are not misleadingly labelled as offline.
+The main window uses Wide, Medium, and Narrow layouts. Below 760 pixels, the preview stacks above the details and secondary commands move into an overflow menu.
 
-The desktop window uses responsive breakpoints rather than continuously shrinking text. At wide and medium sizes the result keeps its two-column preview/detail layout; below 760 pixels it stacks the preview above the details and moves secondary commands into an overflow menu. Only the match and result-data region scrolls: the identity header, compact command bar, current set, Element ID input, and status/version bar remain fixed. Status messages use restrained semantic accents for success, progress, warnings, and errors. The main window resizes freely in both axes down to 640 × 560 pixels, while Settings remains usable down to 720 × 600 pixels. Resizing reuses decoded preview images and never initiates network requests.
+Only the result region scrolls, keeping the header, set, input, and status bar visible. The main window resizes down to 640 × 560 pixels; Settings remains usable down to 720 × 600 pixels.
 
-Settings are organised into General, Lookup, Images and cache, Data, and Account and security tabs. Choose a System, Light, or Dark theme, comfortable or compact density, and an Auto, Wide, Tall, or Compact starting-window layout; manual resizing always remains available, and Auto restores the last valid manual size. Configure automatic copying and optional details, and control previews. On macOS, System follows Light/Dark appearance changes while the application is running using a lightweight, bounded monitor; manual Light or Dark remains fixed. The preview cache contains only part preview images and metadata, reports its size, can be cleared independently, and may use an oldest-first size limit (250 MB by default) or no automatic eviction. Downloaded-set selection remains available from the main window, and a valid new set number is downloaded before it becomes active. API keys never enter these settings or the preview cache.
+## Managing sets
 
-The native application menu provides About, Settings, and Check for Updates, with **Command+,** opening Settings on macOS. File, Edit, View, and Help menus expose the same change-set, update, cache-folder, copy, input-focus, window-layout, repository, and support actions used by the visible controls. The About window shows the installed version and can copy path-free, secret-free runtime diagnostics. **Check for updates** opens the project’s trusted GitHub Releases page; it does not download, install, replace, or downgrade the application. Automatic background checks and stable/beta update delivery remain reserved for a later signed-update design.
+- Enter either `10334` or `10334-1`; the app normalises the set number.
+- A new set becomes active only after its inventory downloads successfully.
+- Switch immediately between valid downloaded sets.
+- Use cached set names and thumbnails while offline.
+- Remove inventories you no longer need. Select another set before removing the active one.
 
-The desktop app reads a stored API key once per running session and reuses the in-memory value for inventory operations. Stable releases are intended to keep a consistent application identity. Unsigned or ad-hoc development rebuilds may ask for Keychain access again because their code identity can change, so choosing **Always Allow** is not guaranteed to persist across rebuilt development apps; this does not weaken or bypass Keychain security.
+![Change Set window](docs/screenshots/change-set.png)
 
-Touch ID protection is deferred as a possible future macOS-only enhancement. Any implementation would use optional Keychain user-presence protection, use Touch ID when available with a password fallback, require no administrator access, and leave Windows and Linux functionality unchanged.
+## Related designs
 
-Native macOS vibrancy or translucency is deferred as an optional future experiment. The solid ttk theme remains the cross-platform default and fallback; any future implementation must be macOS-only when supported, require no privacy or administrator permissions, add no required dependency, and have no effect on Windows or Linux.
+Related-design data is optional, downloaded separately from Rebrickable, and never bundled with the application. The app displays direct, source-backed catalogue relationships only:
 
-Related-design data is optional and downloaded separately from Rebrickable's structured catalogue data; it is never bundled with the application or release archives. The app shows only direct, source-backed relationships and labels them as alternate designs, mould variants, decorated variants, or related components; it does not claim that related parts are interchangeable or transitively equivalent. Cached relationship data and set thumbnails remain available offline. MOC and Mecabricks project support is not included.
+- Alternate designs
+- Mould variants
+- Decorated variants
+- Related components
 
-### Unsigned beta warnings
+Cached relationship data remains available offline. Related parts are catalogue relationships, not guarantees of interchangeability.
 
-Early desktop releases are unsigned:
+## Settings and appearance
 
-- **macOS:** Gatekeeper may report an unidentified developer. In System Settings, open **Privacy & Security** and approve this specific application. Do not disable Gatekeeper globally.
-- **Windows:** SmartScreen may show an Unknown Publisher warning. Confirm the filename and compare it with `SHA256SUMS.txt` before choosing **Run anyway**.
-- **Linux:** make the AppImage executable in file properties if necessary. Some systems require FUSE; use the `.tar.gz` fallback when AppImage cannot start.
+![LEGO Element Lookup settings](docs/screenshots/settings.png)
 
-LEGO is a trademark of the LEGO Group. LEGO Element Lookup is an independent project and is not affiliated with or endorsed by the LEGO Group. Inventory, relationship, metadata, and image URLs are obtained from [Rebrickable](https://rebrickable.com/) at the user's request and remain subject to its terms.
+Settings are transactional: Apply or Save keeps changes, while Cancel discards them.
 
-Always verify the release checksum before bypassing an operating-system warning.
+| Section | Controls |
+| --- | --- |
+| General | Default set, inventory cache folder, System/Light/Dark theme, Comfortable/Compact density, and Auto/Wide/Tall/Compact window layout |
+| Lookup | Automatic copying, copied confirmation, input refocus, and optional result details |
+| Images and cache | Part previews, set thumbnails, preview size, cache limit and eviction, and clear-cache action |
+| Data | Downloaded-set management and access to the cache folder |
+| Account and security | Keychain and session-only storage guidance, plus manual update-check preferences |
 
-## Quick start
+The System theme follows operating-system appearance changes. Manual Light or Dark selection remains fixed.
 
-Clone or download this repository, open a terminal in its folder, then use the setup script for your system.
+## Security and privacy
 
-### macOS
+- No API key is bundled with the application or release assets.
+- The key is sent only to Rebrickable when an authenticated download or update requires it.
+- The desktop app uses the operating-system keychain where available and reads the stored key once per running session.
+- Cached lookups do not send network requests.
+- Local configuration and cache files are ignored by Git.
+- Runtime diagnostics omit secrets and personal paths.
+
+If a key is exposed, revoke it in Rebrickable and replace it immediately.
+
+### Unsigned builds
+
+- **macOS:** Gatekeeper may report an unidentified developer. Approve this specific app in **System Settings → Privacy & Security**; do not disable Gatekeeper globally.
+- **Windows:** SmartScreen may show an Unknown Publisher warning. Confirm the filename and checksum before choosing **Run anyway**.
+- **Linux:** Make the AppImage executable if necessary. If FUSE is unavailable, use the `.tar.gz` fallback.
+
+Always compare downloads with `SHA256SUMS.txt` before bypassing an operating-system warning.
+
+## Command-line interface
+
+The desktop app is the recommended interface. The CLI remains available for scripting and terminal workflows.
+
+### Source installation
+
+Source users need:
+
+- Python 3.10 or newer
+- A free Rebrickable account and API key
+- On Linux, `wl-copy`, `xclip`, or `xsel` for automatic CLI copying
+
+The platform setup scripts create a virtual environment, install the package, create the user folders, and copy the example configuration:
 
 ```sh
+# macOS
 chmod +x scripts/setup-macos.sh
 ./scripts/setup-macos.sh
+
+# Linux
+chmod +x scripts/setup-linux.sh
+./scripts/setup-linux.sh
 ```
 
-### Windows (PowerShell)
+On Windows PowerShell:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\setup-windows.ps1
 ```
 
-### Linux
-
-```sh
-chmod +x scripts/setup-linux.sh
-./scripts/setup-linux.sh
-```
-
-The scripts create `.venv`, install the application, create the correct user folders, and copy the example configuration if needed. They never ask you to expose a key in terminal history.
-
-You can also install manually:
+To install manually:
 
 ```sh
 python3 -m venv .venv
@@ -98,139 +196,102 @@ python3 -m venv .venv
 python -m pip install .
 ```
 
-Then create the user configuration from [`config.example.json`](config.example.json)
-using the location for your operating system shown below. The setup scripts do this
-for you. For an editable development install, use `python -m pip install -e .`.
+Create your user configuration from [`config.example.json`](config.example.json), or use `REBRICKABLE_API_KEY` and `LEGO_LOOKUP_SET`. Environment variables override the configuration file. Print the active paths with:
 
-## Get a Rebrickable API key
+```sh
+lego-lookup config-path
+lego-lookup cache-path
+```
 
-1. Go to [Rebrickable](https://rebrickable.com/) and create an account or sign in.
-2. Open the API section in your account settings.
-3. Generate an API key.
-4. Run `lego-lookup config-path` to find your configuration file.
-5. Open that file in a text editor and replace `YOUR_API_KEY_HERE` with the key.
-6. Do not share the key or commit the configuration file to Git.
-
-The configuration must remain valid JSON, including the quotation marks around the
-key and set number. Downloading is the only operation that requires the API key.
-
-As an alternative, set `REBRICKABLE_API_KEY` in your environment. `LEGO_LOOKUP_SET` changes the default set. Environment variables override the config file.
-
-## User file locations
-
-| System | Configuration | Cache |
-|---|---|---|
-| macOS | `~/Library/Application Support/lego-element-lookup/config.json` | `~/Library/Caches/lego-element-lookup/` |
-| Windows | `%APPDATA%\lego-element-lookup\config.json` | `%LOCALAPPDATA%\lego-element-lookup\cache\` |
-| Linux | `~/.config/lego-element-lookup/config.json` | `~/.cache/lego-element-lookup/` |
-
-`XDG_CONFIG_HOME` and `XDG_CACHE_HOME` are respected on Linux. Print the actual paths with `lego-lookup config-path` and `lego-lookup cache-path`.
-
-## Command-line interface
-
-Download the test set once:
+### Download and update
 
 ```sh
 lego-lookup download 76344-1
+lego-lookup update 76344-1
 ```
 
-Refresh it later with `lego-lookup update 76344-1`. Both commands follow every Rebrickable results page and replace the cache only after a successful download.
+Downloads follow all Rebrickable result pages and replace the cache only after successful validation.
 
-Start the continuous prompt:
+### Interactive and one-off lookup
+
+Start the continuous prompt with no arguments:
 
 ```sh
 lego-lookup
 ```
 
-The prompt stays open so you can paste parts one after another:
-
-```text
-LEGO Element Lookup
-Paste an element ID, or type q to quit.
-
-Element ID: 6212040
-
-Part code:    35480
-Colour code:  154
-
-Part name:    Plate Special 1 x 2 Rounded with 2 Open Studs
-Colour:       Dark red
-Swatch:       ██████████  #720E0F
-Inventory:    quantity 22
-
-Part code copied to clipboard.
-
-Element ID:
-```
-
-Enter one part at a time. Empty input is ignored; `q`, `quit`, `exit`, Ctrl+C, or Ctrl+D closes it cleanly. Invalid input or a missing element reports the problem and returns to the prompt. For a single lookup:
+Use a bare element ID for one lookup, or retain the explicit form in existing scripts:
 
 ```sh
 lego-lookup 6212040
-lego-lookup 6293739
-```
-
-The original explicit form remains available for scripts and backwards compatibility:
-
-```sh
 lego-lookup lookup 6212040
 ```
 
-The second bare-ID example can match the filename `6293739.jpg` even when the entry's top-level ID differs. Bare values must contain digits only; command names such as `download` and `config-path` remain unambiguous.
+The interactive prompt accepts repeated IDs. Use `q`, `quit`, `exit`, Ctrl+C, or Ctrl+D to close it.
 
-### Colour swatches
+### Colour swatches and clipboard
 
-Lookup results always show the cached RGB hex code. On a compatible terminal, the block beside it uses ANSI true colour. Redirected output, terminals without colour support, invalid or missing RGB data, and the following opt-outs produce a plain fallback without ANSI escape sequences:
+The CLI always prints the cached RGB hex value. ANSI true colour is used when supported; redirected output and invalid or missing RGB values use a plain fallback.
 
 ```sh
 lego-lookup --no-colour 6212040
 NO_COLOR=1 lego-lookup 6212040       # macOS and Linux
 ```
 
-In PowerShell, use `$env:NO_COLOR=1` before running the command. The colour swatch uses cached data and does not cause a network request.
-
-## Clipboard behaviour
-
-macOS uses `pbcopy` and Windows uses `clip`. Linux tries `wl-copy`, then `xclip`, then `xsel`. Install one with your package manager—for example `sudo apt install wl-clipboard` on a Wayland desktop or `sudo apt install xclip` on X11. A missing or unavailable clipboard command produces a clear warning but never loses the lookup result or crashes the program.
+In PowerShell, set `$env:NO_COLOR=1`. macOS uses `pbcopy`, Windows uses `clip`, and Linux tries `wl-copy`, `xclip`, then `xsel`. A missing clipboard helper reports a warning without losing the lookup result.
 
 ## Troubleshooting
 
-- **No cached inventory:** run `lego-lookup download SET-NUM`, including the suffix such as `76344-1`.
-- **No API key configured:** edit the path printed by `lego-lookup config-path`, or set `REBRICKABLE_API_KEY`.
-- **API key rejected:** check for extra spaces and generate a fresh key in Rebrickable account settings if necessary.
-- **No match:** confirm the active set in the configuration and the digits from the instruction manual.
-- **Clipboard unavailable on Linux:** install `wl-clipboard`, `xclip`, or `xsel`. The displayed code can still be copied manually.
-- **Invalid cache JSON:** run `lego-lookup update SET-NUM` to safely replace it.
+- **No cached inventory:** Download the set in the desktop app, or run `lego-lookup download SET-NUM` with a suffix such as `76344-1`.
+- **No API key configured:** Complete first-run setup, or set `REBRICKABLE_API_KEY` for the CLI.
+- **API key rejected:** Remove surrounding spaces and generate a replacement in your Rebrickable account if needed.
+- **No match:** Check the selected set and the element ID printed in the instruction manual.
+- **Clipboard unavailable on Linux:** Install `wl-clipboard`, `xclip`, or `xsel`; the displayed code remains available for manual copying.
+- **Invalid inventory cache:** Update the set in the desktop app, or run `lego-lookup update SET-NUM`.
+- **AppImage does not start:** Make it executable or use the Linux `.tar.gz` fallback when FUSE is unavailable.
 
-## Security and privacy
+## User file locations
 
-The application sends the API key only in Rebrickable's required `Authorization` header during download. It never prints the key. Normal lookups make no network request. Local `config.json` and `cache/*.json` files are ignored by Git; verify staged files before every commit. If a key has ever been exposed, revoke and replace it immediately.
+| System | Configuration | Cache |
+| --- | --- | --- |
+| macOS | `~/Library/Application Support/lego-element-lookup/config.json` | `~/Library/Caches/lego-element-lookup/` |
+| Windows | `%APPDATA%\lego-element-lookup\config.json` | `%LOCALAPPDATA%\lego-element-lookup\cache\` |
+| Linux | `~/.config/lego-element-lookup/config.json` | `~/.cache/lego-element-lookup/` |
 
-LEGO is a trademark of the LEGO Group, which does not sponsor or endorse this project. Rebrickable data remains subject to Rebrickable's terms.
-
-## Release history
-
-See [CHANGELOG.md](CHANGELOG.md) for version history. Version 1.0.0 is the first
-public release.
+`XDG_CONFIG_HOME` and `XDG_CACHE_HOME` are respected on Linux. The CLI commands `config-path` and `cache-path` print the active locations.
 
 ## Current limitations
 
-- The app does not update itself. **Check for updates** opens GitHub Releases only.
-- Desktop builds are unsigned beta builds; they are not notarised or signed with a Developer ID or Authenticode certificate.
-- Relationship codes are direct catalogue relationships, not guarantees of functional interchangeability.
-- MOC import, Mecabricks project integration, and native macOS glass/vibrancy are not included.
+- The app does not update itself; **Check for Updates** opens GitHub Releases.
+- Desktop builds are unsigned and not notarised or Authenticode-signed.
+- Related-design relationships do not guarantee interchangeability.
+- MOC import is not supported.
+- Mecabricks project integration is not included.
 
-## Future roadmap
+## Roadmap
+
+These are future ideas, not promised release features:
+
+- Mecabricks integration
+- MOC workflows
+- Optional macOS Touch ID support
+- Signed update delivery
+- Optional native macOS visual effects
 
 ### Lite / Portable edition
 
-A future lightweight edition could support older or low-resource systems with a CLI-first,
-minimal-dependency build. It may be offered as `lego-lookup-lite.py`, a small Python package,
-or a portable zip, with no desktop GUI, installer, or Pillow preview dependency required by
-default. Its core scope would remain offline element-ID → part-code and colour-code lookup;
-advanced desktop and preview features could stay separate.
+A future lightweight edition could provide:
 
-This is future work and is not included in v1.4.0.
+- A CLI-first element-ID lookup for older or low-resource systems
+- Minimal dependencies, with no GUI or Pillow preview requirement by default
+- A single Python script, minimal package, or portable zip
+- The core offline element-ID → part-code and colour-code workflow
+
+The Lite / Portable edition is not part of v1.4.0.
+
+## Release history
+
+See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
 
 ## Development
 
@@ -241,13 +302,15 @@ python -m pip install -e . pytest
 pytest
 ```
 
-Tests use small local fixtures and never contact Rebrickable. GitHub Actions tests Python 3.10–3.13 on Linux, macOS, and Windows.
+Tests use local fixtures and never contact Rebrickable. GitHub Actions runs Python 3.10–3.13 across Linux, macOS, and Windows.
 
-To build release archives:
+Build the wheel and source archive with:
 
 ```sh
 python -m pip install build
 python -m build
 ```
 
-The resulting wheel and source archive appear in `dist/` and can be attached to a GitHub Release.
+## Attribution
+
+LEGO is a trademark of the LEGO Group. LEGO Element Lookup is an independent project and is not affiliated with or endorsed by the LEGO Group. Rebrickable data remains subject to Rebrickable's terms.
