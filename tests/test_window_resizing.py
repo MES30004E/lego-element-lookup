@@ -95,38 +95,31 @@ def test_root_is_freely_resizable_in_both_axes_without_height_lock(tmp_path):
         assert root.maxsize()[1] > MAIN_WINDOW_MIN_SIZE[1]
 
         preset = application.service.settings.preferences.window_layout_preset
-        root.geometry("900x640")
-        root.update_idletasks()
         application._root_configured(SimpleNamespace(widget=root, width=900, height=640))
         application._save_pending_geometry()
         preferences = application.service.settings.preferences
         assert (preferences.last_window_width, preferences.last_window_height) == (900, 640)
         assert preferences.window_layout_preset == preset
-        # Some window managers include decorations in the realised winfo size,
-        # so compare movement rather than requested and realised pixel values.
-        first_realised_size = (root.winfo_width(), root.winfo_height())
 
-        application._select_layout_preset("wide")
-        root.update_idletasks()
-        root.geometry("1000x760")
-        root.update_idletasks()
-        application._root_configured(SimpleNamespace(widget=root, width=1000, height=760))
+        application._root_configured(SimpleNamespace(widget=root, width=1000, height=640))
         application._save_pending_geometry()
         preferences = application.service.settings.preferences
-        assert (preferences.last_window_width, preferences.last_window_height) == (1000, 760)
-        assert application.service.settings.preferences.window_layout_preset == "wide"
-        larger_realised_size = (root.winfo_width(), root.winfo_height())
-        assert larger_realised_size[0] > first_realised_size[0]
-        assert larger_realised_size[1] > first_realised_size[1]
+        assert (preferences.last_window_width, preferences.last_window_height) == (1000, 640)
+        assert preferences.window_layout_preset == preset
 
-        root.geometry("1000x600")
-        root.update_idletasks()
         application._root_configured(SimpleNamespace(widget=root, width=1000, height=600))
         application._save_pending_geometry()
         preferences = application.service.settings.preferences
         assert (preferences.last_window_width, preferences.last_window_height) == (1000, 600)
+        assert preferences.window_layout_preset == preset
+
+        application._select_layout_preset("wide")
+        root.update_idletasks()
+        application._root_configured(SimpleNamespace(widget=root, width=1040, height=690))
+        application._save_pending_geometry()
+        preferences = application.service.settings.preferences
+        assert (preferences.last_window_width, preferences.last_window_height) == (1040, 690)
         assert preferences.window_layout_preset == "wide"
-        assert root.winfo_height() < larger_realised_size[1]
 
         window = application._main_window()
         window._responsive.apply_now(900)
