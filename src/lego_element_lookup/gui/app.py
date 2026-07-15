@@ -6,11 +6,13 @@ import argparse
 import sys
 import tkinter as tk
 from dataclasses import replace
+from pathlib import Path
 from tkinter import messagebox, ttk
 
 from .. import __version__
 from ..config import save_settings
 from ..services import ApplicationService
+from ..preview import PreviewCache
 from .main_window import MAIN_WINDOW_MIN_SIZE, MainWindow
 from .about import PROJECT_URL, RELEASES_URL, SECURITY_URL, open_trusted_url, show_about
 from .theme import SystemThemeMonitor, apply_theme, detect_system_theme
@@ -219,9 +221,15 @@ def _report_callback_exception(root: tk.Tk, exc_type, exc_value, traceback) -> N
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--smoke-test", action="store_true")
+    parser.add_argument("--preview-fetch-smoke", nargs=2, metavar=("URL", "CACHE_DIRECTORY"))
     args, _ = parser.parse_known_args(sys.argv[1:] if argv is None else argv)
     if args.smoke_test:
         print(f"LEGO Element Lookup {__version__}")
+        return 0
+    if args.preview_fetch_smoke:
+        url, cache_directory = args.preview_fetch_smoke
+        path = PreviewCache(Path(cache_directory)).fetch(url)
+        print(f"Preview cached: {path.name}")
         return 0
     root = tk.Tk()
     root.report_callback_exception = lambda *values: _report_callback_exception(root, *values)

@@ -33,11 +33,11 @@ End users should download a prebuilt desktop release from [GitHub Releases](http
 
 | Platform | Download |
 | --- | --- |
-| macOS Apple Silicon | `LEGO-Element-Lookup-v1.4.0-macOS-arm64.dmg` |
-| macOS Intel | `LEGO-Element-Lookup-v1.4.0-macOS-x86_64.dmg` |
-| Windows 10/11 | `LEGO-Element-Lookup-v1.4.0-Windows-x86_64-Setup.exe` |
-| Linux | `LEGO-Element-Lookup-v1.4.0-Linux-x86_64.AppImage` |
-| Linux fallback | `LEGO-Element-Lookup-v1.4.0-Linux-x86_64.tar.gz` |
+| macOS Apple Silicon | `LEGO-Element-Lookup-v1.4.1-macOS-arm64.dmg` |
+| macOS Intel | `LEGO-Element-Lookup-v1.4.1-macOS-x86_64.dmg` |
+| Windows 10/11 | `LEGO-Element-Lookup-v1.4.1-Windows-x86_64-Setup.exe` |
+| Linux | `LEGO-Element-Lookup-v1.4.1-Linux-x86_64.AppImage` |
+| Linux fallback | `LEGO-Element-Lookup-v1.4.1-Linux-x86_64.tar.gz` |
 
 Desktop builds bundle Python. Installing from source requires Python 3.10 or newer.
 
@@ -287,7 +287,7 @@ A future lightweight edition could provide:
 - A single Python script, minimal package, or portable zip
 - The core offline element-ID → part-code and colour-code workflow
 
-The Lite / Portable edition is not part of v1.4.0.
+The Lite / Portable edition is not part of v1.4.1.
 
 ## Release history
 

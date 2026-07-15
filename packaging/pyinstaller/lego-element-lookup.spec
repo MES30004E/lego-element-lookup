@@ -2,6 +2,7 @@
 from pathlib import Path
 import sys
 import tomllib
+from PyInstaller.utils.hooks import collect_data_files
 
 root = Path(SPECPATH).parents[1]
 version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
@@ -10,7 +11,11 @@ icon = root / "assets" / ("icon.ico" if sys.platform == "win32" else "icon.icns"
 a = Analysis(
     [str(root / "packaging" / "desktop_entry.py")],
     pathex=[str(root / "src")],
-    datas=[(str(root / "LICENSE"), "."), (str(root / "assets" / "icon.png"), "assets")],
+    datas=[
+        (str(root / "LICENSE"), "."),
+        (str(root / "assets" / "icon.png"), "assets"),
+        *collect_data_files("certifi"),
+    ],
     hiddenimports=["keyring.backends.macOS", "keyring.backends.Windows", "keyring.backends.SecretService"],
     excludes=["pytest"],
     noarchive=False,

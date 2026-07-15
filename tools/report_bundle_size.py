@@ -3,7 +3,7 @@
 
 Examples:
     python tools/report_bundle_size.py "dist/LEGO Element Lookup.app" \
-        --archive dist/LEGO-Element-Lookup-v1.4.0-macOS-arm64.dmg \
+        --archive dist/LEGO-Element-Lookup-v1.4.1-macOS-arm64.dmg \
         --json build/bundle-size-macos-arm64.json
     python tools/report_bundle_size.py dist/LEGO-Element-Lookup.AppDir --json build/linux.json
     python tools/report_bundle_size.py dist/LEGO-Element-Lookup.AppImage --json build/linux-appimage.json

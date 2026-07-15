@@ -2,27 +2,32 @@ from __future__ import annotations
 
 import io
 import importlib.util
+import ssl
 from pathlib import Path
+from urllib.error import URLError
 
 import pytest
 from PIL import Image
 
 from lego_element_lookup.icon_generation import brick_bounds, draw_icon, stud_centres, tile_bounds
 from lego_element_lookup import preview
+from lego_element_lookup.gui import app
 from lego_element_lookup.preview import PreviewCache, PreviewError
 
 
 class Headers:
+    def __init__(self, content_type="image/jpeg"):
+        self.content_type = content_type
+
     def get_content_type(self):
-        return "image/jpeg"
+        return self.content_type
 
 
 class Response:
-    headers = Headers()
-
-    def __init__(self, payload, final_url="https://cdn.rebrickable.com/media/parts/elements/6212040.jpg"):
+    def __init__(self, payload, final_url="https://cdn.rebrickable.com/media/parts/elements/6212040.jpg", content_type="image/jpeg"):
         self.payload = payload
         self.final_url = final_url
+        self.headers = Headers(content_type)
 
     def __enter__(self):
         return self
@@ -44,7 +49,8 @@ def jpeg_bytes() -> bytes:
 
 
 def test_preview_download_is_validated_resized_and_cached(monkeypatch, tmp_path):
-    monkeypatch.setattr(preview, "urlopen", lambda request, timeout: Response(jpeg_bytes()))
+    calls = []
+    monkeypatch.setattr(preview, "urlopen", lambda request, timeout, context: calls.append(context) or Response(jpeg_bytes()))
     cache = PreviewCache(tmp_path)
     url = "https://cdn.rebrickable.com/media/parts/elements/6212040.jpg"
     destination = cache.fetch(url)
@@ -52,6 +58,8 @@ def test_preview_download_is_validated_resized_and_cached(monkeypatch, tmp_path)
     with Image.open(destination) as image:
         assert image.format == "PNG"
         assert image.width <= 360 and image.height <= 260
+    assert calls and calls[0].verify_mode == ssl.CERT_REQUIRED
+    assert calls[0].check_hostname is True
 
 
 def test_preview_rejects_untrusted_hosts_without_network(monkeypatch, tmp_path):
@@ -64,7 +72,7 @@ def test_preview_rejects_redirect_to_untrusted_host(monkeypatch, tmp_path):
     monkeypatch.setattr(
         preview,
         "urlopen",
-        lambda request, timeout: Response(jpeg_bytes(), "https://example.invalid/redirect.jpg"),
+        lambda request, timeout, context: Response(jpeg_bytes(), "https://example.invalid/redirect.jpg"),
     )
     with pytest.raises(PreviewError, match="No preview"):
         PreviewCache(tmp_path).fetch("https://cdn.rebrickable.com/media/parts/elements/6212040.jpg")
@@ -75,6 +83,68 @@ def test_missing_preview_has_clean_fallback(tmp_path):
     assert cache.cached(None) is None
     with pytest.raises(PreviewError, match="No preview available"):
         cache.fetch(None)
+
+
+def test_preview_rejects_invalid_content_type(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        preview,
+        "urlopen",
+        lambda request, timeout, context: Response(b"not an image", content_type="text/html"),
+    )
+    with pytest.raises(PreviewError, match="Preview data is invalid") as raised:
+        PreviewCache(tmp_path).fetch("https://cdn.rebrickable.com/media/parts/elements/6212040.jpg")
+    assert raised.value.state == "invalid"
+
+
+def test_verified_context_uses_certifi_without_bypassing_verification(monkeypatch):
+    calls = []
+    real_create_default_context = ssl.create_default_context
+
+    def create_default_context(*, cafile):
+        calls.append(cafile)
+        return real_create_default_context(cafile=cafile)
+
+    monkeypatch.setattr(preview.ssl, "create_default_context", create_default_context)
+    context = preview.verified_ssl_context()
+    assert calls == [preview.certifi.where()]
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert context.check_hostname is True
+    assert context.get_ca_certs()
+
+
+def test_preview_preserves_ssl_failure_as_internal_cause(monkeypatch, tmp_path):
+    ssl_error = ssl.SSLCertVerificationError(1, "certificate verify failed")
+    url_error = URLError(ssl_error)
+
+    def fail(request, timeout, context):
+        raise url_error
+
+    monkeypatch.setattr(preview, "urlopen", fail)
+    with pytest.raises(PreviewError, match="^Preview could not be downloaded$") as raised:
+        PreviewCache(tmp_path).fetch("https://cdn.rebrickable.com/media/parts/elements/6212040.jpg")
+    assert raised.value.state == "download_failed"
+    assert raised.value.__cause__ is url_error
+
+
+def test_cached_preview_remains_available_offline(monkeypatch, tmp_path):
+    url = "https://cdn.rebrickable.com/media/parts/elements/6212040.jpg"
+    cache = PreviewCache(tmp_path)
+    monkeypatch.setattr(preview, "urlopen", lambda request, timeout, context: Response(jpeg_bytes()))
+    cached = cache.fetch(url)
+    monkeypatch.setattr(preview, "urlopen", lambda *args, **kwargs: pytest.fail("cached fetch must remain offline"))
+    assert cache.fetch(url) == cached
+
+
+def test_pyinstaller_spec_collects_certifi_certificate_data():
+    spec = (Path(__file__).parents[1] / "packaging" / "pyinstaller" / "lego-element-lookup.spec").read_text(encoding="utf-8")
+    assert 'collect_data_files("certifi")' in spec
+
+
+def test_desktop_preview_fetch_smoke_uses_preview_cache_without_opening_tk(monkeypatch, tmp_path, capsys):
+    expected = tmp_path / "previews" / "cached.png"
+    monkeypatch.setattr(app.PreviewCache, "fetch", lambda self, url: expected)
+    assert app.main(["--preview-fetch-smoke", "https://cdn.rebrickable.com/example.jpg", str(tmp_path)]) == 0
+    assert capsys.readouterr().out == "Preview cached: cached.png\n"
 
 
 @pytest.mark.parametrize("size", [16, 32, 64, 128, 256, 512, 1024])

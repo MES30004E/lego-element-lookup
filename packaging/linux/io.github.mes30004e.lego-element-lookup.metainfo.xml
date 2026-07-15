@@ -13,5 +13,5 @@
   <url type="bugtracker">https://github.com/MES30004E/lego-element-lookup/issues</url>
   <launchable type="desktop-id">io.github.mes30004e.lego-element-lookup.desktop</launchable>
   <provides><binary>lego-element-lookup</binary></provides>
-  <releases><release version="@VERSION@" date="2026-07-14"/></releases>
+  <releases><release version="@VERSION@" date="2026-07-15"/></releases>
 </component>

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-07-15
+
+### Fixed
+
+- Fixed new part preview downloads failing in frozen desktop builds because bundled
+  Python/OpenSSL had no usable CA certificate store.
+- Added an explicit verified certificate bundle using certifi.
+- Preserved full TLS certificate and hostname verification.
+- Added frozen preview-fetch packaging validation.
+
 ## [1.4.0] - 2026-07-14
 
 ### Added
@@ -128,7 +138,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guided setup scripts for macOS, Windows, and Linux.
 - GitHub Actions test matrix covering Python 3.10–3.13 on macOS, Windows, and Linux.
 
-[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/MES30004E/lego-element-lookup/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/MES30004E/lego-element-lookup/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.2...v1.4.0
 [1.2.2]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/MES30004E/lego-element-lookup/compare/v1.2.0...v1.2.1

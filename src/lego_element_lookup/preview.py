@@ -5,12 +5,14 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import ssl
 import time
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+import certifi
 from PIL import Image, UnidentifiedImageError
 
 from . import __version__
@@ -18,6 +20,11 @@ ALLOWED_IMAGE_HOSTS = {"cdn.rebrickable.com"}
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 MAX_IMAGE_PIXELS = 16_000_000
 THUMBNAIL_SIZE = (360, 260)
+
+
+def verified_ssl_context() -> ssl.SSLContext:
+    """Return a verified context whose CA data is available when frozen."""
+    return ssl.create_default_context(cafile=certifi.where())
 
 
 class PreviewError(RuntimeError):
@@ -103,7 +110,7 @@ class PreviewCache:
             raise PreviewError("No preview available: URL is not trusted", "untrusted")
         request = Request(url, headers={"User-Agent": f"lego-element-lookup/{__version__}"})
         try:
-            with urlopen(request, timeout=15) as response:
+            with urlopen(request, timeout=15, context=verified_ssl_context()) as response:
                 final_url = response.geturl() if hasattr(response, "geturl") else url
                 final_parsed = urlparse(final_url)
                 if final_parsed.scheme != "https" or final_parsed.hostname not in ALLOWED_IMAGE_HOSTS:
@@ -114,15 +121,15 @@ class PreviewCache:
                 payload = response.read(MAX_IMAGE_BYTES + 1)
         except PreviewError:
             raise
-        except TimeoutError:
-            raise PreviewError("Preview request timed out", "timed_out") from None
+        except TimeoutError as exc:
+            raise PreviewError("Preview request timed out", "timed_out") from exc
         except URLError as exc:
             reason = getattr(exc, "reason", None)
             if isinstance(reason, OSError) and getattr(reason, "errno", None) in {101, 113}:
-                raise PreviewError("Preview unavailable while offline", "offline") from None
-            raise PreviewError("Preview could not be downloaded", "download_failed") from None
-        except (HTTPError, OSError):
-            raise PreviewError("Preview could not be downloaded", "download_failed") from None
+                raise PreviewError("Preview unavailable while offline", "offline") from exc
+            raise PreviewError("Preview could not be downloaded", "download_failed") from exc
+        except (HTTPError, OSError) as exc:
+            raise PreviewError("Preview could not be downloaded", "download_failed") from exc
         if len(payload) > MAX_IMAGE_BYTES:
             raise PreviewError("Preview image is too large", "invalid")
         try:

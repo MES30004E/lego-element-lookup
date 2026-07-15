@@ -1,7 +1,7 @@
 #define AppName "LEGO Element Lookup"
 ; This fallback must match pyproject.toml. Release CI supplies /DAppVersion.
 #ifndef AppVersion
-  #define AppVersion "1.4.0"
+  #define AppVersion "1.4.1"
 #endif
 #ifndef SourceDir
 #define SourceDir "..\..\dist\LEGO Element Lookup"
