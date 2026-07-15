@@ -102,16 +102,31 @@ def test_root_is_freely_resizable_in_both_axes_without_height_lock(tmp_path):
         preferences = application.service.settings.preferences
         assert (preferences.last_window_width, preferences.last_window_height) == (900, 640)
         assert preferences.window_layout_preset == preset
-        assert root.winfo_height() == 640
+        # Some window managers include decorations in the realised winfo size,
+        # so compare movement rather than requested and realised pixel values.
+        first_realised_size = (root.winfo_width(), root.winfo_height())
 
         application._select_layout_preset("wide")
         root.update_idletasks()
-        root.geometry("1000x650")
+        root.geometry("1000x760")
         root.update_idletasks()
-        application._root_configured(SimpleNamespace(widget=root, width=1000, height=650))
+        application._root_configured(SimpleNamespace(widget=root, width=1000, height=760))
         application._save_pending_geometry()
-        assert root.winfo_width() == 1000 and root.winfo_height() == 650
+        preferences = application.service.settings.preferences
+        assert (preferences.last_window_width, preferences.last_window_height) == (1000, 760)
         assert application.service.settings.preferences.window_layout_preset == "wide"
+        larger_realised_size = (root.winfo_width(), root.winfo_height())
+        assert larger_realised_size[0] > first_realised_size[0]
+        assert larger_realised_size[1] > first_realised_size[1]
+
+        root.geometry("1000x600")
+        root.update_idletasks()
+        application._root_configured(SimpleNamespace(widget=root, width=1000, height=600))
+        application._save_pending_geometry()
+        preferences = application.service.settings.preferences
+        assert (preferences.last_window_width, preferences.last_window_height) == (1000, 600)
+        assert preferences.window_layout_preset == "wide"
+        assert root.winfo_height() < larger_realised_size[1]
 
         window = application._main_window()
         window._responsive.apply_now(900)
